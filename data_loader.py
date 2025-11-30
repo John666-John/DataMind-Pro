@@ -4,7 +4,6 @@ DataMind 销售分析 - 数据导入模块
 """
 import pandas as pd
 import os
-from typing import Optional
 
 
 def load_data(file_path: str) -> pd.DataFrame:
