@@ -1,10 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataMind 销售分析系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-$END$
+    <header>
+        <h1>DataMind 企业销售分析系统</h1>
+    </header>
+
+    <main>
+        <section class="data-management">
+            <h2>数据管理</h2>
+            <div class="form-group">
+                <label for="file-upload">上传数据文件 (CSV/Excel)</label>
+                <input type="file" id="file-upload" accept=".csv,.xls,.xlsx">
+            </div>
+
+            <div class="form-group">
+                <label>数据编辑</label>
+                <button id="create-new">新建数据文件</button>
+                <button id="edit-existing">编辑当前数据</button>
+            </div>
+
+            <div id="data-editor" class="hidden">
+                <h3>数据编辑</h3>
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <th>日期 (MM/DD/YYYY)</th>
+                            <th>产品ID</th>
+                            <th>销售额</th>
+                            <th>区域</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" placeholder="10/01/2025"></td>
+                            <td><input type="text" placeholder="P001"></td>
+                            <td><input type="number" placeholder="10000"></td>
+                            <td><input type="text" placeholder="华北"></td>
+                            <td><button class="remove-row">删除</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button id="add-row">添加行</button>
+                <button id="save-data">保存数据</button>
+            </div>
+        </section>
+
+        <section class="analysis-section">
+            <h2>分析设置</h2>
+            <div class="form-group">
+                <label for="report-dir">报告保存路径</label>
+                <input type="text" id="report-dir" placeholder="例如: C:/Reports">
+            </div>
+            <button id="start-analysis">开始分析</button>
+        </section>
+
+        <div class="progress hidden">
+            <div class="progress-bar"></div>
+            <div id="progress-text">准备中...</div>
+        </div>
+
+        <section class="results-section hidden">
+            <h2>分析结果</h2>
+            <div class="summary">
+                <h3>销售摘要</h3>
+                <p>总销售额: <span id="total-sales"></span></p>
+                <p>平均日销售额: <span id="avg-daily-sales"></span></p>
+                <p>最佳销售区域: <span id="top-region"></span></p>
+                <p>数据覆盖天数: <span id="data-days"></span></p>
+            </div>
+
+            <div class="charts">
+                <h3>销售图表</h3>
+                <img id="sales-chart" src="" alt="销售趋势图">
+            </div>
+
+            <div class="prediction">
+                <h3>11月销售预测 (前5天)</h3>
+                <table id="prediction-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>区域编码</th>
+                            <th>产品编码</th>
+                            <th>预测销售额(元)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="reports">
+                <h3>生成报告</h3>
+                <p>Excel 报告: <span id="excel-report"></span></p>
+                <p>PDF 报告: <span id="pdf-report"></span></p>
+                <p>图表目录: <span id="charts-dir"></span></p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>DataMind 企业销售分析系统 &copy; 2025</p>
+    </footer>
+
+    <script src="/static/js/script.js"></script>
+    <script>
+        // 数据编辑功能
+        document.getElementById('create-new').addEventListener('click', () => {
+            document.getElementById('data-editor').classList.remove('hidden');
+            document.getElementById('data-table').querySelector('tbody').innerHTML = `
+                <tr>
+                    <td><input type="text" placeholder="10/01/2025"></td>
+                    <td><input type="text" placeholder="P001"></td>
+                    <td><input type="number" placeholder="10000"></td>
+                    <td><input type="text" placeholder="华北"></td>
+                    <td><button class="remove-row">删除</button></td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('add-row').addEventListener('click', () => {
+            const tbody = document.getElementById('data-table').querySelector('tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="10/01/2025"></td>
+                <td><input type="text" placeholder="P001"></td>
+                <td><input type="number" placeholder="10000"></td>
+                <td><input type="text" placeholder="华北"></td>
+                <td><button class="remove-row">删除</button></td>
+            `;
+            tbody.appendChild(newRow);
+            attachRemoveEvents();
+        });
+
+        function attachRemoveEvents() {
+            document.querySelectorAll('.remove-row').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.target.closest('tr').remove();
+                });
+            });
+        }
+
+        // 保存数据到后端
+        document.getElementById('save-data').addEventListener('click', () => {
+            const rows = [];
+            document.querySelectorAll('#data-table tbody tr').forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                rows.push({
+                    date: inputs[0].value,
+                    product_id: inputs[1].value,
+                    sales: inputs[2].value,
+                    region: inputs[3].value
+                });
+            });
+
+            fetch('/api/save-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: rows })
+            }).then(res => res.json())
+              .then(data => {
+                  alert(data.message);
+                  if (data.status === 'success') {
+                      document.getElementById('data-editor').classList.add('hidden');
+                  }
+              });
+        });
+
+        // 文件上传处理
+        document.getElementById('file-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            }).then(res => res.json())
+              .then(data => alert(data.message));
+        });
+    </script>
 </body>
 </html>
