@@ -1,0 +1,101 @@
+/* 全局样式 */
+body {
+    font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* 动画效果 */
+.animate-fade-in {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.8s ease-in-out;
+}
+
+.animate-pulse {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* 表格样式增强 */
+#salesTable {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+#salesTable th {
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    transition: background-color 0.3s;
+}
+
+#salesTable td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px 8px;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+#salesTable tbody tr:hover {
+    background-color: #e9f5ff;
+    transform: scale(1.005);
+}
+
+/* 可编辑单元格样式 */
+.editable-cell {
+    cursor: pointer;
+    border-bottom: 2px dashed #0d6efd;
+}
+
+.editable-cell:focus {
+    outline: none;
+    background-color: #fff8e1;
+}
+
+/* 按钮样式增强 */
+.btn {
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* 卡片样式 */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+/* 状态提示样式 */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
