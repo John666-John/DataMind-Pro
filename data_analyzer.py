@@ -1,20 +1,15 @@
 """
-DataMind Sales Analysis - Data Visualization Module
-Generates sales trend charts and regional distribution charts
+Generate daily sales trend and regional distribution charts
 """
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
-import numpy as np
-
 
 def setup_matplotlib():
-    """Configure matplotlib for English display (avoid font issues)"""
-    plt.rcParams["font.sans-serif"] = ["Arial", "Helvetica", "Verdana", "Tahoma"]
+    """Fix Chinese font issue & plot style for web environment"""
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
     plt.rcParams["axes.unicode_minus"] = False
-    plt.rcParams["figure.dpi"] = 100
-    plt.rcParams["savefig.dpi"] = 300
-
+    plt.style.use("ggplot")
 
 def generate_sales_charts(df: pd.DataFrame, save_dir: str) -> str:
     """
@@ -64,7 +59,7 @@ def generate_sales_charts(df: pd.DataFrame, save_dir: str) -> str:
     # Subplot 2: Regional sales distribution
     colors = ["#A23B72", "#F18F01", "#C73E1D", "#2E86AB", "#3F88C5"]
     wedges, texts, autotexts = ax2.pie(
-        regional_sales.values, labels=regional_sales.index,  # Uses English region names
+        regional_sales.values, labels=regional_sales.index,
         autopct="%1.1f%%",
         colors=colors[:len(regional_sales)],
         startangle=90,
@@ -81,16 +76,3 @@ def generate_sales_charts(df: pd.DataFrame, save_dir: str) -> str:
 
     print(f"✅ Charts saved to: {chart_path}")
     return chart_path
-
-
-if __name__ == "__main__":
-    dates = pd.date_range(start="2025-10-01", end="2025-10-31", freq="D")
-    test_df = pd.DataFrame({
-        "日期": dates,
-        "产品ID": ["001"] * 15 + ["002"] * 16,
-        "销售额": np.random.randint(5000, 20000, size=31),
-        "区域": ["North"] * 10 + ["East"] * 12 + ["South"] * 9  # English regions
-    })
-
-    test_save_dir = r"D:/DataMind_Reports/202510/Charts"
-    generate_sales_charts(test_df, test_save_dir)

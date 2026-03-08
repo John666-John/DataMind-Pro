@@ -1,55 +1,40 @@
-"""
-DataMind Sales Analysis - Report Export Module
-Exports Excel summary tables and PDF analysis reports
-"""
-import numpy as np
-import pandas as pd
+"""Generate English PDF report"""
 import os
+import pandas as pd
 from fpdf import FPDF
-from datetime import datetime
-
 
 class SalesReportPDF(FPDF):
-    """Custom PDF report class with English font configuration"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.set_font("Arial", "", 12)  # Use built-in English font
-
+    """Custom PDF class for sales report"""
     def header(self):
-        """PDF header with English title"""
+        # Report header
         self.set_font("Arial", "B", 16)
-        self.cell(0, 10, "Monthly Sales Analysis Report (October 2025)", 0, 1, "C")
-        self.set_font("Arial", "", 10)
-        self.cell(0, 5, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 0, 1, "C")
-        self.ln(10)
+        self.cell(0, 10, "DataMind Enterprise Sales Analysis Report - October 2025", 0, 1, "C")
+        self.ln(5)
 
+    def footer(self):
+        # Page number
+        self.set_y(-15)
+        self.set_font("Arial", "I", 8)
+        self.cell(0, 10, f"Page {self.page_no()}", 0, 0, "C")
 
 def export_area_excel(df: pd.DataFrame, save_dir: str) -> str:
-    """Export regional sales summary in Excel (English headers)"""
+    """Export regional sales summary to Excel (对接main.py逻辑)"""
     os.makedirs(save_dir, exist_ok=True)
     excel_path = os.path.join(save_dir, "202510_regional_sales_summary.xlsx")
 
-    # Calculate metrics with English column names
+    # 按区域汇总销售额（与main.py保持一致）
     area_summary = df.groupby("区域").agg({
-        "销售额": [
-            ("Total Sales (RMB)", "sum"),
-            ("Avg Daily Sales (RMB)", "mean"),
-            ("Median Sales (RMB)", "median")
-        ],
-        "产品ID": [("Order Count", "count")],
-        "日期": [("Coverage Days", "nunique")]
+        "销售额": ["sum", "mean", "max"]
     }).round(2)
+    area_summary.columns = ["Total Sales (RMB)", "Avg Daily Sales (RMB)", "Max Daily Sales (RMB)"]
+    area_summary = area_summary.reset_index()
 
-    area_summary.columns = [col[1] for col in area_summary.columns]
-    area_summary["Regional Rank"] = area_summary["Total Sales (RMB)"].rank(ascending=False, method="min").astype(int)
-    area_summary = area_summary.sort_values("Total Sales (RMB)", ascending=False)
-
+    # 保存Excel
     with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
-        area_summary.to_excel(writer, sheet_name="Regional Summary", index=True)
+        area_summary.to_excel(writer, sheet_name="Regional Summary", index=False)
 
-    print(f"\n✅ Excel report saved to: {excel_path}")
+    print(f"✅ Excel summary saved to: {excel_path}")
     return excel_path
-
 
 def export_sales_pdf(
     df: pd.DataFrame,
@@ -57,7 +42,7 @@ def export_sales_pdf(
     predict_df: pd.DataFrame,
     save_dir: str
 ) -> str:
-    """Generate English PDF report"""
+    """Generate English PDF report (完整对接原有逻辑)"""
     os.makedirs(save_dir, exist_ok=True)
     pdf_path = os.path.join(save_dir, "202510_sales_analysis_report.pdf")
 
@@ -139,26 +124,3 @@ def export_sales_pdf(
     pdf.output(pdf_path)
     print(f"✅ PDF report saved to: {pdf_path}")
     return pdf_path
-
-
-if __name__ == "__main__":
-    dates = pd.date_range(start="2025-10-01", end="2025-10-31", freq="D")
-    test_df = pd.DataFrame({
-        "日期": dates,
-        "产品ID": ["001", "002"] * 15 + ["001"],
-        "销售额": np.random.randint(10000, 30000, size=31),
-        "区域": ["North", "East"] * 15 + ["North"]  # English regions
-    })
-
-    test_predict_df = pd.DataFrame({
-        "日序": [1,2,3,4,5],
-        "区域编码": [0,1,0,1,0],
-        "产品编码": [0,1,0,1,0],
-        "预测销售额（元）": [15000, 18000, 16000, 19000, 17000]
-    })
-
-    test_save_dir = r"D:/DataMind_Reports/202510"
-    export_area_excel(test_df, test_save_dir)
-    test_chart_path = os.path.join(test_save_dir, "Charts/sales_analysis_charts.png")
-    if os.path.exists(test_chart_path):
-        export_sales_pdf(test_df, test_chart_path, test_predict_df, test_save_dir)
